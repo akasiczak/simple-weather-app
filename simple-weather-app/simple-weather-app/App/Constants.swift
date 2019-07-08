@@ -7,3 +7,5 @@
 //
 
 import Foundation
+
+let openWeatherApi = "b162a410a624914d62dd2dfa1a00faf1"

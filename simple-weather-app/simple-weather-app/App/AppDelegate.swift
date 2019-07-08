@@ -20,11 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
-        let collectionFlowLayout = UICollectionViewFlowLayout()
-        collectionFlowLayout.scrollDirection = .horizontal
-        let weatherController = WeatherCollectionViewController(collectionViewLayout: collectionFlowLayout)
-        
-        window?.rootViewController = weatherController
+        window?.rootViewController = WeatherViewController()
         
         return true
     }
