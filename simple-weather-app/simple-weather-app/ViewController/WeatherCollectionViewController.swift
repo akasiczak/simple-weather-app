@@ -21,6 +21,8 @@ class WeatherCollectionViewController: UICollectionViewController, UICollectionV
         // Do any additional setup after loading the view.
         collectionView?.delegate = self
         collectionView?.dataSource = self
+        collectionView.isPagingEnabled = true
+        collectionView.showsHorizontalScrollIndicator = false
     }
 
     // MARK: UICollectionViewDataSource
@@ -35,5 +37,13 @@ class WeatherCollectionViewController: UICollectionViewController, UICollectionV
         cell.backgroundColor = .red
     
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: view.frame.height)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
     }
 }
