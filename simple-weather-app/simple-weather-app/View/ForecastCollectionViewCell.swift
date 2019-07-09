@@ -68,7 +68,8 @@ class ForecastCollectionViewCell: UICollectionViewCell {
     }
     
     func configureCell(forecastData: ForecastWeather) {
-        self.timeLabel.text = "\(forecastData.date)"
-        self.temperatureForTimeLabel.text = "\(forecastData.temp)"
+        self.timeLabel.text = forecastData.date
+        self.temperatureForTimeLabel.text = String(forecastData.temp)
+        self.iconImageView.image = UIImage(named: forecastData.icon)
     }
 }

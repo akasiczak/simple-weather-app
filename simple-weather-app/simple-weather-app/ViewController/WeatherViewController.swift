@@ -7,18 +7,12 @@
 //
 
 import UIKit
-import CoreLocation
 import Alamofire
 import SwiftyJSON
 
-class WeatherViewController: UIViewController, CLLocationManagerDelegate {
-    
-    let locationManager = CLLocationManager()
+class WeatherViewController: UIViewController {
     
     var forecastArray = [ForecastWeather]()
-    
-    var lat = 0.0
-    var long = 0.0
     
     let cellId = "cellId"
     
@@ -79,14 +73,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         
         view.backgroundColor = .lightGray
         
-        locationManager.requestWhenInUseAuthorization()
-        
-//        if CLLocationManager.locationServicesEnabled() {
-//            locationManager.delegate = self
-//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-//            locationManager.startUpdatingLocation()
-//        }
-        
         Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
             if let responseString = response.result.value {
                 let jsonResponse = JSON(responseString)
@@ -105,11 +91,10 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
                 self.cityName.text = jsonName
                 self.temperatureLabel.text = jsonTemp + "°C"
                 self.weatherCondition.text = jsonDesription
+                self.weatherIcon.image = UIImage(named: jsonIcon)
             }
         }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
+        
         Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
             if let responseString = response.result.value {
                 if let dictionary = responseString as? Dictionary<String, AnyObject> {
@@ -123,6 +108,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
                 }
             }
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
     }
     
     func setupLayout() {

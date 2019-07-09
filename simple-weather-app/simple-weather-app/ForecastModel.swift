@@ -11,6 +11,8 @@ import Foundation
 class ForecastWeather {
     var date: String!
     var temp: Double!
+    var icon: String!
+    
     
     init(weatherDictionary: Dictionary<String, AnyObject>) {
         if let main = weatherDictionary["main"] as? Dictionary<String, AnyObject> {
@@ -27,13 +29,25 @@ class ForecastWeather {
             
             self.date = "\(rawDate.hour())"
         }
+        
+        if let weather = weatherDictionary["weather"] as? [Dictionary<String, AnyObject>] {
+            
+            for icon in weather {
+                if let icon = icon["icon"] as? String {
+                    self.icon = icon
+                }
+            }
+//            if let icon = weather["icon"] as? String {
+//                self.icon = icon
+//            }
+        }
     }
 }
 
 extension Date {
     func hour() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "ha"
+        dateFormatter.dateFormat = "EEEE, ha"
         return dateFormatter.string(from: self)
     }
 }
