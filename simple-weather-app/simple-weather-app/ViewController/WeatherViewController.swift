@@ -16,6 +16,20 @@ class WeatherViewController: UIViewController {
     
     let cellId = "cellId"
     
+    let searchButton: UIButton = {
+       let btn = UIButton()
+        
+        btn.addTarget(self, action: #selector(searchButtonClick), for: .touchUpInside)
+        btn.setTitle("Click", for: .normal)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        
+        return btn
+    }()
+    
+    @objc func searchButtonClick() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     let cityName: UILabel = {
         let label = UILabel()
         label.text = "City name"
@@ -72,8 +86,10 @@ class WeatherViewController: UIViewController {
         setupLayout()
         
         view.backgroundColor = .lightGray
-        
-        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
+    }
+    
+    func updateWeatherForLocation(location: String) {
+        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=\(location)&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
             if let responseString = response.result.value {
                 let jsonResponse = JSON(responseString)
                 let jsonList = jsonResponse["list"].array![0]
@@ -88,14 +104,14 @@ class WeatherViewController: UIViewController {
                 let jsonCity = jsonResponse["city"]
                 let jsonName = jsonCity["name"].stringValue
                 
-                self.cityName.text = jsonName
-                self.temperatureLabel.text = jsonTemp + "°C"
-                self.weatherCondition.text = jsonDesription
-                self.weatherIcon.image = UIImage(named: jsonIcon)
+                    self.cityName.text = jsonName
+                    self.temperatureLabel.text = jsonTemp + "°C"
+                    self.weatherCondition.text = jsonDesription
+                    self.weatherIcon.image = UIImage(named: jsonIcon)
             }
         }
         
-        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
+        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=\(location)&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
             if let responseString = response.result.value {
                 if let dictionary = responseString as? Dictionary<String, AnyObject> {
                     if let jsonList = dictionary["list"] as? [Dictionary<String, AnyObject>] {
@@ -110,10 +126,12 @@ class WeatherViewController: UIViewController {
         }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
+        updateWeatherForLocation(location: locationString)
     }
     
     func setupLayout() {
+        view.addSubview(searchButton)
         view.addSubview(cityName)
         view.addSubview(weatherCondition)
         view.addSubview(temperatureLabel)
@@ -121,6 +139,9 @@ class WeatherViewController: UIViewController {
         view.addSubview(forecastCollectionView)
         
         NSLayoutConstraint.activate([
+            
+            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            searchButton.topAnchor.constraint(equalTo: cityName.topAnchor),
             
             cityName.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             cityName.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
@@ -141,16 +162,6 @@ class WeatherViewController: UIViewController {
             forecastCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor)
             ])
     }
-    
-    //MARK Location Manager
-    
-//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//        let location = locations[0]
-//
-//        lat = location.coordinate.latitude
-//        long = location.coordinate.longitude
-//
-//    }
 }
 
 
