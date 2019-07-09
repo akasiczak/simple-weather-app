@@ -14,14 +14,17 @@ class WeatherViewController: UIViewController {
     
     var forecastArray = [ForecastWeather]()
     
+    let viewModel = WeatherViewModel()
+    
     let cellId = "cellId"
     
     let searchButton: UIButton = {
        let btn = UIButton()
         
         btn.addTarget(self, action: #selector(searchButtonClick), for: .touchUpInside)
-        btn.setTitle("Click", for: .normal)
         btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.setImage(UIImage(named: "search"), for: .normal)
+        btn.tintColor = .white
         
         return btn
     }()
@@ -69,7 +72,6 @@ class WeatherViewController: UIViewController {
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.showsHorizontalScrollIndicator = false
-        cv.backgroundColor = .white
         cv.translatesAutoresizingMaskIntoConstraints = false
         
         return cv
@@ -80,34 +82,45 @@ class WeatherViewController: UIViewController {
 
         // Do any additional setup after loading the view.
         forecastCollectionView.dataSource = self
-        forecastCollectionView.delegate = self
         forecastCollectionView.register(ForecastCollectionViewCell.self, forCellWithReuseIdentifier: cellId)
         
         setupLayout()
-        
-        view.backgroundColor = .lightGray
+        setupColors()
+        setupFonts()
     }
     
     func updateWeatherForLocation(location: String) {
         Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=\(location)&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
             if let responseString = response.result.value {
                 let jsonResponse = JSON(responseString)
-                let jsonList = jsonResponse["list"].array![0]
-                
-                let jsonMainTemp = jsonList["main"]
-                let jsonTemp = jsonMainTemp["temp"].stringValue
-                
-                let jsonWeather = jsonList["weather"].array![0]
-                let jsonDesription = jsonWeather["description"].stringValue
-                let jsonIcon = jsonWeather["icon"].stringValue
-                
-                let jsonCity = jsonResponse["city"]
-                let jsonName = jsonCity["name"].stringValue
-                
+                if jsonResponse["cod"] == "404" {
+                    print("błąd")
+                } else {
+                    let jsonList = jsonResponse["list"].array![0]
+                    
+                    let jsonMainTemp = jsonList["main"]
+                    let jsonTemp = jsonMainTemp["temp"]
+                    
+                    let jsonWeather = jsonList["weather"].array![0]
+                    let jsonDesription = jsonWeather["description"].stringValue
+                    let jsonIcon = jsonWeather["icon"].stringValue
+                    
+                    let jsonCity = jsonResponse["city"]
+                    let jsonName = jsonCity["name"].stringValue
+                    
                     self.cityName.text = jsonName
-                    self.temperatureLabel.text = jsonTemp + "°C"
+                    self.temperatureLabel.text = jsonTemp.stringValue + "°C"
                     self.weatherCondition.text = jsonDesription
-                    self.weatherIcon.image = UIImage(named: jsonIcon)
+                    self.weatherIcon.image = UIImage(named: jsonIcon)?.maskWithColor(color: .white)
+                    
+                    if jsonTemp < 10 {
+                        self.temperatureLabel.textColor = UIColor.CustomColors.cambridgeBlue
+                    } else if jsonTemp > 10 && jsonTemp < 20 {
+                        self.temperatureLabel.textColor = UIColor.black
+                    } else {
+                        self.temperatureLabel.textColor = UIColor.red
+                    }
+                }
             }
         }
         
@@ -140,11 +153,13 @@ class WeatherViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             
-            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             searchButton.topAnchor.constraint(equalTo: cityName.topAnchor),
+            searchButton.widthAnchor.constraint(equalToConstant: 25),
+            searchButton.heightAnchor.constraint(equalToConstant: 25),
             
             cityName.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            cityName.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            cityName.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 35),
             
             weatherCondition.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             weatherCondition.topAnchor.constraint(equalTo: cityName.bottomAnchor, constant: 15),
@@ -153,7 +168,9 @@ class WeatherViewController: UIViewController {
             temperatureLabel.topAnchor.constraint(equalTo: weatherCondition.bottomAnchor, constant: 30),
             
             weatherIcon.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            weatherIcon.topAnchor.constraint(equalTo: temperatureLabel.bottomAnchor, constant: 20),
+            weatherIcon.topAnchor.constraint(equalTo: temperatureLabel.bottomAnchor, constant: 35),
+            weatherIcon.widthAnchor.constraint(equalToConstant: 100),
+            weatherIcon.heightAnchor.constraint(equalToConstant: 100),
             
             forecastCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             forecastCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -162,10 +179,19 @@ class WeatherViewController: UIViewController {
             forecastCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor)
             ])
     }
-}
-
-
-extension WeatherViewController: UICollectionViewDelegateFlowLayout {
+    
+    func setupColors() {
+        view.backgroundColor = UIColor.CustomColors.pineApple
+        self.cityName.textColor = UIColor.CustomColors.tuscanYellow
+        self.weatherCondition.textColor = UIColor.CustomColors.tuscanYellow
+        self.forecastCollectionView.backgroundColor = UIColor.CustomColors.tuscanYellow
+    }
+    
+    func setupFonts() {
+        self.cityName.font = UIFont.CustomFonts.cityNameFont
+        self.weatherCondition.font = UIFont.CustomFonts.conditionFont
+        self.temperatureLabel.font = UIFont.CustomFonts.temperatureFont
+    }
 }
 
 extension WeatherViewController: UICollectionViewDataSource {
@@ -175,8 +201,8 @@ extension WeatherViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = forecastCollectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ForecastCollectionViewCell
-        cell.backgroundColor = .yellow
         
+        cell.layer.cornerRadius = 10
         cell.configureCell(forecastData: forecastArray[indexPath.row])
         
         return cell

@@ -17,6 +17,7 @@ class ForecastCollectionViewCell: UICollectionViewCell {
         
         label.text = "time"
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
         
         return label
     }()
@@ -40,9 +41,9 @@ class ForecastCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .yellow
         
         setupLayout()
+        setupColors()
     }
     
     func setupLayout() {
@@ -53,14 +54,22 @@ class ForecastCollectionViewCell: UICollectionViewCell {
         NSLayoutConstraint.activate([
             
             timeLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            timeLabel.bottomAnchor.constraint(equalTo: iconImageView.topAnchor, constant: 20),
+            timeLabel.bottomAnchor.constraint(equalTo: iconImageView.topAnchor, constant: -20),
             
             iconImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            iconImageView.widthAnchor.constraint(equalToConstant: 50),
+            iconImageView.heightAnchor.constraint(equalToConstant: 50),
             
             temperatureForTimeLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             temperatureForTimeLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 20),
             ])
+    }
+    
+    func setupColors() {
+        backgroundColor = UIColor.CustomColors.pineApple
+        self.timeLabel.textColor = UIColor.CustomColors.tuscanYellow
+        self.temperatureForTimeLabel.textColor = UIColor.CustomColors.tuscanYellow
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -69,7 +78,7 @@ class ForecastCollectionViewCell: UICollectionViewCell {
     
     func configureCell(forecastData: ForecastWeather) {
         self.timeLabel.text = forecastData.date
-        self.temperatureForTimeLabel.text = String(forecastData.temp)
-        self.iconImageView.image = UIImage(named: forecastData.icon)
+        self.temperatureForTimeLabel.text = String(forecastData.temp) + "°C"
+        self.iconImageView.image = UIImage(named: forecastData.icon)?.maskWithColor(color: .white)
     }
 }

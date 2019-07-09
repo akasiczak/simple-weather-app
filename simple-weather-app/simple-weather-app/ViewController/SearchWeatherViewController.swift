@@ -18,7 +18,7 @@ class SearchWeatherViewController: UIViewController {
        let field = UITextField()
         
         field.translatesAutoresizingMaskIntoConstraints = false
-        field.placeholder = "City Here"
+        field.placeholder = "Enter your city here"
         
         return field
     }()
@@ -27,14 +27,16 @@ class SearchWeatherViewController: UIViewController {
        let btn = UIButton()
         
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.backgroundColor = .yellow
         btn.addTarget(self, action: #selector(getDataAndDismiss), for: .touchUpInside)
+        btn.setTitle("Search for city", for: .normal)
+        btn.layer.cornerRadius = 10
+        
         return btn
     }()
     
     @objc func getDataAndDismiss() {
-//        WeatherViewController().updateWeatherForLocation(location: searchTextField.text!)
-        locationString = searchTextField.text!
+        let formattedString = searchTextField.text?.replacingOccurrences(of: " ", with: "&")
+        locationString = formattedString!
         let vc = WeatherViewController()
         self.present(vc, animated: true, completion: nil)
     }
@@ -43,9 +45,7 @@ class SearchWeatherViewController: UIViewController {
         super.viewDidLoad()
         
         setupLayout()
-
-        // Do any additional setup after loading the view.
-        view.backgroundColor = .red
+        setupColors()
     }
     
     func setupLayout() {
@@ -61,7 +61,12 @@ class SearchWeatherViewController: UIViewController {
             getDataButton.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 30),
             getDataButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
             getDataButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
-            getDataButton.heightAnchor.constraint(equalToConstant: 150),
+            getDataButton.heightAnchor.constraint(equalToConstant: 50),
             ])
+    }
+    
+    func setupColors() {
+        view.backgroundColor = UIColor.CustomColors.paleSpringBud
+        getDataButton.backgroundColor = UIColor.CustomColors.pineApple
     }
 }

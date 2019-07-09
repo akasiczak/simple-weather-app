@@ -27,7 +27,7 @@ class ForecastWeather {
             let dateFormatter = DateFormatter()
             dateFormatter.dateStyle = .medium
             
-            self.date = "\(rawDate.hour())"
+            self.date = "\(rawDate.formattedDate())"
         }
         
         if let weather = weatherDictionary["weather"] as? [Dictionary<String, AnyObject>] {
@@ -37,17 +37,6 @@ class ForecastWeather {
                     self.icon = icon
                 }
             }
-//            if let icon = weather["icon"] as? String {
-//                self.icon = icon
-//            }
         }
-    }
-}
-
-extension Date {
-    func hour() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, ha"
-        return dateFormatter.string(from: self)
     }
 }
