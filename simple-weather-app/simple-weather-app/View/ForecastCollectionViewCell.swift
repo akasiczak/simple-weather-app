@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Alamofire
+import SwiftyJSON
 
 class ForecastCollectionViewCell: UICollectionViewCell {
     
@@ -63,5 +65,10 @@ class ForecastCollectionViewCell: UICollectionViewCell {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configureCell(forecastData: ForecastWeather) {
+        self.timeLabel.text = "\(forecastData.date)"
+        self.temperatureForTimeLabel.text = "\(forecastData.temp)"
     }
 }

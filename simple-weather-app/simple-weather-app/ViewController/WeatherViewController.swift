@@ -15,6 +15,8 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     let locationManager = CLLocationManager()
     
+    var forecastArray = [ForecastWeather]()
+    
     var lat = 0.0
     var long = 0.0
     
@@ -79,10 +81,47 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         
         locationManager.requestWhenInUseAuthorization()
         
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.startUpdatingLocation()
+//        if CLLocationManager.locationServicesEnabled() {
+//            locationManager.delegate = self
+//            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+//            locationManager.startUpdatingLocation()
+//        }
+        
+        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
+            if let responseString = response.result.value {
+                let jsonResponse = JSON(responseString)
+                let jsonList = jsonResponse["list"].array![0]
+                
+                let jsonMainTemp = jsonList["main"]
+                let jsonTemp = jsonMainTemp["temp"].stringValue
+                
+                let jsonWeather = jsonList["weather"].array![0]
+                let jsonDesription = jsonWeather["description"].stringValue
+                let jsonIcon = jsonWeather["icon"].stringValue
+                
+                let jsonCity = jsonResponse["city"]
+                let jsonName = jsonCity["name"].stringValue
+                
+                self.cityName.text = jsonName
+                self.temperatureLabel.text = jsonTemp + "°C"
+                self.weatherCondition.text = jsonDesription
+            }
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        Alamofire.request("http://api.openweathermap.org/data/2.5/forecast?q=london&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
+            if let responseString = response.result.value {
+                if let dictionary = responseString as? Dictionary<String, AnyObject> {
+                    if let jsonList = dictionary["list"] as? [Dictionary<String, AnyObject>] {
+                        for item in jsonList {
+                            let forecast = ForecastWeather(weatherDictionary: item)
+                            self.forecastArray.append(forecast)
+                        }
+                    }
+                    self.forecastCollectionView.reloadData()
+                }
+            }
         }
     }
     
@@ -117,28 +156,13 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     //MARK Location Manager
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let location = locations[0]
-        
-        lat = location.coordinate.latitude
-        long = location.coordinate.longitude
-        
-        Alamofire.request("http://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(long)&appid=\(openWeatherApi)&units=metric").responseJSON { (response) in
-            if let responseString = response.result.value {
-                let jsonResponse = JSON(responseString)
-                let jsonWeather = jsonResponse["weather"].array![0]
-                let jsonMain = jsonResponse["main"]
-                let jsonTemp = jsonMain["temp"].stringValue
-                let jsonCity = jsonResponse["name"].stringValue
-                let jsonWeatherCondition = jsonWeather["description"].stringValue
-//                let jsonWeatehrIcon = jsonWeather["01d"]
-                
-                self.cityName.text = jsonCity
-                self.temperatureLabel.text = jsonTemp + "°C"
-                self.weatherCondition.text = jsonWeatherCondition
-            }
-        }
-    }
+//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//        let location = locations[0]
+//
+//        lat = location.coordinate.latitude
+//        long = location.coordinate.longitude
+//
+//    }
 }
 
 
@@ -147,12 +171,15 @@ extension WeatherViewController: UICollectionViewDelegateFlowLayout {
 
 extension WeatherViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return forecastArray.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = forecastCollectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ForecastCollectionViewCell
         cell.backgroundColor = .yellow
+        
+        cell.configureCell(forecastData: forecastArray[indexPath.row])
+        
         return cell
     }
 }
